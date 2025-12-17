@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y \
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
+# Set timezone
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+
 # Set working directory
 WORKDIR /var/www/html
 
@@ -20,4 +25,12 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80
+# Expose port 80
 EXPOSE 80
+
+# Make scripts executable
+RUN chmod +x scripts/start.sh scripts/scheduler.sh
+
+# Start application
+CMD ["/var/www/html/scripts/start.sh"]
+

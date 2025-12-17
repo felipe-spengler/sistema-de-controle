@@ -39,6 +39,19 @@ try {
         ADD COLUMN IF NOT EXISTS commission_rate DECIMAL(5, 2) DEFAULT 10.00
     ");
 
+    // Tabela de Logs de Cobrança
+    $pdo->exec("CREATE TABLE IF NOT EXISTS logs_cobrancas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+        tipo VARCHAR(50), 
+        vendedor_nome VARCHAR(255),
+        cliente_rs VARCHAR(255),
+        telefone VARCHAR(50),
+        status VARCHAR(50),
+        mensagem TEXT,
+        erro TEXT
+    )");
+
     echo "✅ Tabelas atualizadas com sucesso!<br>";
     echo "✅ Tabela de saques criada<br>";
     echo "✅ Campos bancários adicionados<br>";

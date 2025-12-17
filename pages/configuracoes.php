@@ -77,8 +77,11 @@ foreach (getAllConfigs() as $c) {
 
                 <!-- Configurações WhatsApp (Waha) -->
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
                         <h2>Integração WhatsApp (Waha)</h2>
+                        <a href="relatorio_cobrancas.php" class="btn btn-secondary"
+                            style="font-size: 0.85em; padding: 0.4em 0.8em;">Ver Logs de Envio</a>
                     </div>
 
                     <div class="form-group">
@@ -90,8 +93,8 @@ foreach (getAllConfigs() as $c) {
 
                     <div style="margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
                         <h3>Status da Conexão</h3>
-                        <p>Para conectar o WhatsApp, acesse o painel do Waha na porta 3001 do seu servidor (ex:
-                            http://seu-ip:3001/dashboard).</p>
+                        <p>Para conectar o WhatsApp, acesse o painel do Waha na porta 3050 do seu servidor (ex:
+                            http://seu-ip:3050/dashboard).</p>
                     </div>
                 </div>
 

@@ -36,40 +36,48 @@ Sistema completo para administração de vendas de software com painel administr
 
 ---
 
-## 🚀 Instalação
+## 🚀 Instalação (Docker)
+> **Recomendado para Produção e Desenvolvimento**
 
 ### Pré-requisitos
-- XAMPP (Apache + MySQL + PHP 8.0+)
-- Navegador moderno
-- Conta no Asaas (opcional para testes)
+- Docker e Docker Compose instalados
 
 ### Passo a Passo
 
-1. **Clone ou copie o projeto para o XAMPP**
+1. **Clone o repositório**
+2. **Configure as variáveis de ambiente**
+   - Copie o `.env.example` para `.env`
+   - Preencha as credenciais do Banco e Asaas
+
+3. **Inicie os Containers**
 ```bash
-# Copiar para
-C:\xampp\htdocs\projeto-assis
+docker-compose up -d --build
 ```
 
-2. **Inicie o XAMPP**
-   - Inicie Apache
-   - Inicie MySQL
+4. **Acesse o Sistema**
+   - **Sistema Principal:** `http://localhost:3051`
+   - **Login Admin:** `admin@sistema.com` / `admin123`
+   - **WhatsApp (Waha):** `http://localhost:3050`
 
-3. **Configure o banco de dados**
-   - Acesse: `http://localhost/projeto-assis/setup.php`
-   - Isso criará automaticamente:
-     - Banco de dados `sistema_vendas_assis`
-     - Todas as tabelas necessárias
-     - Usuário admin padrão
+---
 
-4. **Atualize as tabelas (para integração Asaas)**
-   - Acesse: `http://localhost/projeto-assis/update_database.php`
+## 🤖 Automação e Cobrança
 
-5. **Acesse o sistema**
-   - URL: `http://localhost/projeto-assis/`
-   - **Login Admin:**
-     - Email: `admin@sistema.com`
-     - Senha: `admin123`
+O sistema possui um **agendador interno** que roda automaticamente todos os dias às 09:00.
+
+### 🔄 fluxo de Verificação
+1. **Verificação de Conexão:** Checa se o WhatsApp (Waha) está conectado.
+2. **Busca de Faturas:**
+   - Vencendo em 5 dias (Aviso prévio)
+   - Vencendo Hoje (Cobrança)
+   - Atrasadas > 1 dia e < 30 dias (Cobrança diária)
+3. **Envio de Mensagem:** Se conectado, envia a mensagem personalizada via WhatsApp.
+4. **Log Detalhado:** Todos os envios (sucesso ou falha) são gravados em `logs_cobrancas` e visíveis no admin.
+
+### 📱 Mensagens Personalizáveis
+Você pode editar os templates das mensagens diretamente no painel em **Configurações**.
+Variáveis disponíveis: `{cliente}`, `{valor}`, `{vencimento}`, `{link_pagamento}`.
+
 
 ---
 
@@ -136,6 +144,13 @@ Solicitações de saque
 - Vinculada a vendedor
 - Status de aprovação
 - ID da transferência Asaas
+
+#### `logs_cobrancas`
+Histórico de automação
+- Registro de envios de mensagens
+- Status (enviado, erro, não_conectado)
+- Data/Hora da verificação
+
 
 ---
 

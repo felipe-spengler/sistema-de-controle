@@ -14,6 +14,48 @@ if (!$wahaUrl) {
     die("URL do Waha não configurada.\n");
 }
 
+// Verificar conexão com WhatsApp
+function checkWahaConnection()
+{
+    global $wahaUrl;
+    $ch = curl_init($wahaUrl . '/api/sessions');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    // Assumindo que 200 OK significa que o serviço está rodando.
+    // Para ser mais específico, verificar se há uma sessão 'default' com status 'WORKING'
+    if ($httpCode != 200)
+        return false;
+
+    $data = json_decode($response, true);
+    foreach ($data as $session) {
+        if ($session['name'] == 'default' && $session['status'] == 'WORKING') {
+            return true;
+        }
+    }
+    return false;
+}
+
+$wahaConnected = checkWahaConnection();
+echo "Status do WhatsApp: " . ($wahaConnected ? "CONECTADO" : "DESCONECTADO") . "\n";
+
+/**
+ * Função para registrar log
+ */
+function logCobranca($tipo, $vendedor, $cliente, $telefone, $status, $msg, $erro = null)
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("INSERT INTO logs_cobrancas (tipo, vendedor_nome, cliente_rs, telefone, status, mensagem, erro) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$tipo, $vendedor, $cliente, $telefone, $status, $msg, $erro]);
+    } catch (Exception $e) {
+        echo "Erro ao salvar log: " . $e->getMessage() . "\n";
+    }
+}
+
 /**
  * Função para enviar mensagem via Waha
  */
@@ -32,7 +74,7 @@ function sendWahaMessage($phone, $message)
     $payload = [
         'chatId' => $chatId,
         'text' => $message,
-        'session' => 'default' // Sessão padrão do Waha
+        'session' => 'default'
     ];
 
     $ch = curl_init($wahaUrl . '/api/sendText');
@@ -40,12 +82,18 @@ function sendWahaMessage($phone, $message)
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
     curl_close($ch);
 
-    return $httpCode == 201 || $httpCode == 200;
+    if ($httpCode == 201 || $httpCode == 200) {
+        return ['success' => true];
+    } else {
+        return ['success' => false, 'error' => "HTTP $httpCode: $response $error"];
+    }
 }
 
 /**
@@ -93,10 +141,19 @@ foreach ($faturas as $f) {
             ['razao_social' => $f['razao_social']],
             $f
         );
-        if (sendWahaMessage($f['vendedor_telefone'], $msg)) {
-            echo " [5 dias] Mensagem enviada para {$f['vendedor_nome']} sobre {$f['razao_social']}\n";
+
+        if ($wahaConnected) {
+            $res = sendWahaMessage($f['vendedor_telefone'], $msg);
+            if ($res['success']) {
+                logCobranca('5_dias', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'enviado', $msg);
+                echo " [5 dias] Enviado: {$f['vendedor_nome']}\n";
+            } else {
+                logCobranca('5_dias', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'erro_envio', $msg, $res['error']);
+                echo " [5 dias] Erro ao enviar: {$f['vendedor_nome']}\n";
+            }
         } else {
-            echo " [ERRO] Falha ao enviar para {$f['vendedor_nome']}\n";
+            logCobranca('5_dias', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'nao_conectado', $msg, 'WhatsApp Desconectado');
+            echo " [5 dias] Logado (sem envio): {$f['vendedor_nome']}\n";
         }
     }
 }
@@ -122,14 +179,24 @@ foreach ($faturas as $f) {
             ['razao_social' => $f['razao_social']],
             $f
         );
-        sendWahaMessage($f['vendedor_telefone'], $msg);
-        echo " [HOJE] Mensagem enviada para {$f['vendedor_nome']}\n";
+
+        if ($wahaConnected) {
+            $res = sendWahaMessage($f['vendedor_telefone'], $msg);
+            if ($res['success']) {
+                logCobranca('hoje', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'enviado', $msg);
+                echo " [HOJE] Enviado: {$f['vendedor_nome']}\n";
+            } else {
+                logCobranca('hoje', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'erro_envio', $msg, $res['error']);
+                echo " [HOJE] Erro ao enviar: {$f['vendedor_nome']}\n";
+            }
+        } else {
+            logCobranca('hoje', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'nao_conectado', $msg, 'WhatsApp Desconectado');
+            echo " [HOJE] Logado (sem envio): {$f['vendedor_nome']}\n";
+        }
     }
 }
 
-// 3. Atrasadas (Vencimento < hoje e Status != pago)
-// CUIDADO: Isso pode mandar msg todo dia. O usuário pediu: "todos os dias enquanto vencido envia"
-// Vou limitar a 30 dias de atraso pra não spamar faturas de 1990
+// 3. Atrasadas
 echo "Verificando faturas atrasadas...\n";
 $stmt = $pdo->prepare("
     SELECT f.*, c.razao_social, v.nome as vendedor_nome, v.telefone as vendedor_telefone 
@@ -152,8 +219,20 @@ foreach ($faturas as $f) {
             ['razao_social' => $f['razao_social']],
             $f
         );
-        sendWahaMessage($f['vendedor_telefone'], $msg);
-        echo " [ATRASO] Mensagem enviada para {$f['vendedor_nome']} (Vcto: {$f['data_vencimento']})\n";
+
+        if ($wahaConnected) {
+            $res = sendWahaMessage($f['vendedor_telefone'], $msg);
+            if ($res['success']) {
+                logCobranca('atrasado', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'enviado', $msg);
+                echo " [ATRASO] Enviado: {$f['vendedor_nome']}\n";
+            } else {
+                logCobranca('atrasado', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'erro_envio', $msg, $res['error']);
+                echo " [ATRASO] Erro ao enviar: {$f['vendedor_nome']}\n";
+            }
+        } else {
+            logCobranca('atrasado', $f['vendedor_nome'], $f['razao_social'], $f['vendedor_telefone'], 'nao_conectado', $msg, 'WhatsApp Desconectado');
+            echo " [ATRASO] Logado (sem envio): {$f['vendedor_nome']}\n";
+        }
     }
 }
 
