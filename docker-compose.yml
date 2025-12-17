@@ -20,7 +20,7 @@ services:
       - ./:/var/www/html
 
   db:
-    image: mysql:8.0
+    image: mariadb:10.11
     container_name: sistema-controle-db
     restart: always
     environment:
@@ -32,7 +32,6 @@ services:
       - "3052:3306"
     volumes:
       - db_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
 
   waha:
     image: devlikeapro/waha
@@ -41,9 +40,9 @@ services:
     environment:
       - WHATSAPP_DEFAULT_ENGINE=WEBJS
       - WAHA_WORKER_ID=sistema-controle
-      - WAHA_PRINT_QR=false # QR code will be viewed in the dashboard or app
-      # - WAHA_DASHBOARD_USERNAME=admin # Opcional: proteger dashboard
-      # - WAHA_DASHBOARD_PASSWORD=password # Opcional: proteger dashboard
+      - WAHA_PRINT_QR=false
+      # Otimizações de Memória
+      - WAHA_PUPPETEER_ARGS=--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-accelerated-2d-canvas --no-first-run --no-zygote --single-process --disable-gpu
     ports:
       - "3050:3000"
     volumes:
