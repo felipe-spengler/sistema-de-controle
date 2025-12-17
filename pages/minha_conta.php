@@ -21,15 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 
     if ($_POST['action'] === 'update_bank') {
-        $bank_name = $_POST['banco_nome'];
-        $bank_agency = $_POST['banco_agencia'];
-        $bank_account = $_POST['banco_conta'];
-        $bank_account_type = $_POST['banco_tipo_conta'];
+        $chave_pix = $_POST['chave_pix'];
 
-        $stmt = $pdo->prepare("UPDATE usuarios SET banco_nome = ?, banco_agencia = ?, banco_conta = ?, banco_tipo_conta = ? WHERE id = ?");
-        $stmt->execute([$bank_name, $bank_agency, $bank_account, $bank_account_type, $userId]);
+        $stmt = $pdo->prepare("UPDATE usuarios SET chave_pix = ? WHERE id = ?");
+        $stmt->execute([$chave_pix, $userId]);
 
-        $success = "Dados bancários atualizados com sucesso!";
+        $success = "Chave Pix atualizada com sucesso!";
     }
 
     if ($_POST['action'] === 'change_password') {

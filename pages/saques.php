@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $error = "Valor inválido.";
     } elseif ($amount > $availableBalance) {
         $error = "Saldo insuficiente.";
-    } elseif (!$user['banco_conta'] || !$user['cpf_cnpj']) {
-        $error = "Complete seus dados bancários antes de solicitar um saque.";
+    } elseif (empty($user['chave_pix']) || !$user['cpf_cnpj']) {
+        $error = "Cadastre sua Chave Pix e CPF/CNPJ antes de solicitar um saque.";
     } else {
         try {
             // Salvar no banco de dados
@@ -224,15 +224,15 @@ if ($is_admin) {
                                     <?= number_format($availableBalance, 2, ',', '.') ?></small>
                             </div>
 
-                            <?php if (!$user['banco_conta']): ?>
+                            <?php if (empty($user['chave_pix'])): ?>
                                 <div
                                     style="background-color: #fef3c7; color: #92400e; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
-                                    ⚠️ Complete seus dados bancários em <a href="minha_conta.php"
-                                        style="text-decoration: underline;">Minha Conta</a> antes de solicitar um saque.
+                                    ⚠️ Cadastre sua <a href="minha_conta.php" style="text-decoration: underline;">Chave Pix</a>
+                                    em Minha Conta antes de solicitar um saque.
                                 </div>
                             <?php endif; ?>
 
-                            <button type="submit" class="btn btn-primary" <?= !$user['banco_conta'] ? 'disabled' : '' ?>>
+                            <button type="submit" class="btn btn-primary" <?= empty($user['chave_pix']) ? 'disabled' : '' ?>>
                                 Solicitar Saque
                             </button>
                         </form>

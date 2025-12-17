@@ -14,11 +14,19 @@ try {
         banco_agencia VARCHAR(20),
         banco_conta VARCHAR(20),
         banco_tipo_conta ENUM('corrente', 'poupanca') DEFAULT 'corrente',
+        chave_pix VARCHAR(100), -- Nova coluna PIX
         cpf_cnpj VARCHAR(20),
         telefone VARCHAR(20),
         asaas_conta_id VARCHAR(100),
         taxa_comissao DECIMAL(5, 2) DEFAULT 10.00
     )");
+
+    // Tentar adicionar coluna chave_pix caso não exista (Migração simples)
+    try {
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN chave_pix VARCHAR(100)");
+    } catch (Exception $e) {
+        // Ignorar se já existir
+    }
 
     // Tabela Clientes
     $pdo->exec("CREATE TABLE IF NOT EXISTS clientes (
