@@ -9,9 +9,9 @@ if (!isAdmin()) {
 
 // Handle Add Seller
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
-    $name = $_POST['nome'];
+    $name = $_POST['name'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, 'vendedor')");
     try {
