@@ -16,8 +16,6 @@ services:
       - ASAAS_ENV=${ASAAS_ENV}
     depends_on:
       - db
-    volumes:
-      - ./:/var/www/html
 
   db:
     image: mariadb:10.11
