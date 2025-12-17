@@ -2,7 +2,7 @@
 
 # Update database schema on startup
 echo "Updating database schema..."
-php /var/www/html/update_database.php
+php /var/www/html/setup.php
 
 # Start Scheduler in background
 /bin/bash /usr/local/bin/scheduler.sh &
