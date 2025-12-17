@@ -5,7 +5,7 @@ echo "Updating database schema..."
 php /var/www/html/update_database.php
 
 # Start Scheduler in background
-/bin/bash /var/www/html/scripts/scheduler.sh &
+/bin/bash /usr/local/bin/scheduler.sh &
 
 # Start Apache in foreground (original command)
 exec apache2-foreground

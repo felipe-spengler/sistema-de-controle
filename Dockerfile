@@ -28,10 +28,12 @@ RUN chown -R www-data:www-data /var/www/html
 # Expose port 80
 EXPOSE 80
 
-# Make scripts executable and fix line endings
-RUN dos2unix scripts/start.sh scripts/scheduler.sh \
-    && chmod +x scripts/start.sh scripts/scheduler.sh
+# Move scripts to a safe location (outside volume mount) and fix line endings
+COPY scripts/start.sh /usr/local/bin/start.sh
+COPY scripts/scheduler.sh /usr/local/bin/scheduler.sh
+RUN dos2unix /usr/local/bin/start.sh /usr/local/bin/scheduler.sh \
+    && chmod +x /usr/local/bin/start.sh /usr/local/bin/scheduler.sh
 
 # Start application
-CMD ["/var/www/html/scripts/start.sh"]
+CMD ["/usr/local/bin/start.sh"]
 
