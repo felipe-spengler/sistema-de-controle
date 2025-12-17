@@ -70,7 +70,7 @@ $sellers = $stmt->fetchAll();
                                         <td><?= htmlspecialchars($seller['email']) ?></td>
                                         <td><?= date('d/m/Y', strtotime($seller['criado_em'])) ?></td>
                                         <td>
-                                            <button class="btn"
+                                            <button class="btn" onclick="alert('Funcionalidade em desenvolvimento!')"
                                                 style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #f1f5f9; color: var(--text-main);">Acessar
                                                 Painel</button>
                                         </td>

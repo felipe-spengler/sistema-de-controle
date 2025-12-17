@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../includes/autenticacao.php';
 require_once '../includes/config_sistema.php';
 
