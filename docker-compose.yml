@@ -48,6 +48,7 @@ services:
       - WAHA_DASHBOARD_PASSWORD=password
       - WHATSAPP_SWAGGER_USERNAME=root
       - WHATSAPP_SWAGGER_PASSWORD=password
+      - WAHA_API_KEY=password
     ports:
       - "3050:3000"
     volumes:
