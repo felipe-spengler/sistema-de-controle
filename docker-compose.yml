@@ -38,7 +38,7 @@ services:
     container_name: sistema-controle-waha
     restart: always
     environment:
-      - WHATSAPP_DEFAULT_ENGINE=WEBJS
+      - WHATSAPP_DEFAULT_ENGINE=NOWEB
       - WAHA_WORKER_ID=sistema-controle
       - WAHA_PRINT_QR=false
       # Otimizações de Memória
