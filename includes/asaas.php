@@ -164,14 +164,20 @@ class AsaasAPI
 }
 
 // Configuração global
-require_once __DIR__ . '/../config/env_loader.php';
-
-$ASAAS_API_KEY = getenv('ASAAS_API_KEY') ?: '';
-$ASAAS_ENV = getenv('ASAAS_ENV') ?: 'sandbox';
+require_once __DIR__ . '/config_sistema.php';
 
 function getAsaasAPI()
 {
-    global $ASAAS_API_KEY, $ASAAS_ENV;
-    return new AsaasAPI($ASAAS_API_KEY, $ASAAS_ENV);
+    $apiKey = getConfig('asaas_api_key');
+    $env = getConfig('asaas_ambiente');
+
+    // Fallback para .env se não estiver no banco (durante migração)
+    if (empty($apiKey)) {
+        require_once __DIR__ . '/../config/env_loader.php';
+        $apiKey = getenv('ASAAS_API_KEY');
+        $env = getenv('ASAAS_ENV') ?: 'sandbox';
+    }
+
+    return new AsaasAPI($apiKey, $env);
 }
 ?>

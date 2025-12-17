@@ -47,8 +47,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </li>
 
             <li>
-                <a href="assinaturas.php"
-                    class="nav-item <?= $current_page == 'assinaturas.php' ? 'active' : '' ?>">
+                <a href="assinaturas.php" class="nav-item <?= $current_page == 'assinaturas.php' ? 'active' : '' ?>">
                     <span>Assinaturas</span>
                 </a>
             </li>
@@ -58,6 +57,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <span>Minha Conta</span>
                 </a>
             </li>
+
+            <?php if (isAdmin()): ?>
+                <li>
+                    <a href="configuracoes.php"
+                        class="nav-item <?= $current_page == 'configuracoes.php' ? 'active' : '' ?>">
+                        <span>Configurações</span>
+                    </a>
+                </li>
+            <?php endif; ?>
         </ul>
     </nav>
 

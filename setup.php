@@ -63,6 +63,32 @@ try {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     )");
 
+    // Tabela Configurações
+    $pdo->exec("CREATE TABLE IF NOT EXISTS configuracoes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        chave VARCHAR(50) NOT NULL UNIQUE,
+        valor TEXT,
+        descricao VARCHAR(255),
+        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )");
+
+    // Inserir configurações padrão se não existirem
+    $defaultConfigs = [
+        ['asaas_api_key', '', 'Chave da API do Asaas'],
+        ['asaas_ambiente', 'sandbox', 'Ambiente do Asaas (sandbox ou production)'],
+        ['waha_url', 'http://waha:3000', 'URL do servidor Waha (interno)'], // Usando nome do container
+        ['msg_vencimento_5dias', 'Olá {vendedor}, a fatura do cliente {cliente} vence em 5 dias.', 'Mensagem 5 dias antes'],
+        ['msg_vencimento_hoje', 'Olá {vendedor}, a fatura do cliente {cliente} vence hoje!', 'Mensagem no dia do vencimento'],
+        ['msg_vencimento_atrasado', 'Olá {vendedor}, a fatura do cliente {cliente} está atrasada.', 'Mensagem de atraso (diária)']
+    ];
+
+    $stmtConfig = $pdo->prepare("INSERT IGNORE INTO configuracoes (chave, valor, descricao) VALUES (?, ?, ?)");
+    foreach ($defaultConfigs as $config) {
+        $stmtConfig->execute($config);
+    }
+
+
     // Criar Admin User se não existir
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE email = ?");
     $stmt->execute(['admin@sistema.com']);
