@@ -43,6 +43,11 @@ services:
       - WAHA_PRINT_QR=false
       # Otimizações de Memória
       - WAHA_PUPPETEER_ARGS=--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-accelerated-2d-canvas --no-first-run --no-zygote --single-process --disable-gpu
+      # Credenciais Fixas
+      - WAHA_DASHBOARD_USERNAME=root
+      - WAHA_DASHBOARD_PASSWORD=password
+      - WHATSAPP_SWAGGER_USERNAME=root
+      - WHATSAPP_SWAGGER_PASSWORD=password
     ports:
       - "3050:3000"
     volumes:
