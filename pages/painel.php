@@ -3,11 +3,11 @@ require_once '../includes/autenticacao.php';
 require_once '../config/db.php';
 
 // Fetch stats
-$userId = $_SESSION['usuario_id'];
+$userId = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
 // Base query conditions
-$sellerCondition = $is_admin ? "1=1" : "seller_id = $userId";
+$sellerCondition = $is_admin ? "1=1" : "vendedor_id = $userId";
 $clientJoin = $is_admin ? "" : "JOIN clientes c ON i.cliente_id = c.id AND c.vendedor_id = $userId";
 
 // 1. Total Clients
@@ -28,7 +28,7 @@ $pendingInvoices = $stmt->fetchColumn();
 // 4. Monthly Revenue (Paid invoices this month)
 $currentMonth = date('Y-m');
 $query = $is_admin
-    ? "SELECT SUM(amount) FROM faturas WHERE status = 'pago' AND DATE_FORMAT(payment_date, '%Y-%m') = '$currentMonth'"
+    ? "SELECT SUM(valor) FROM faturas WHERE status = 'pago' AND DATE_FORMAT(data_pagamento, '%Y-%m') = '$currentMonth'"
     : "SELECT SUM(i.valor) FROM faturas i JOIN clientes c ON i.cliente_id = c.id WHERE c.vendedor_id = $userId AND i.status = 'pago' AND DATE_FORMAT(i.data_pagamento, '%Y-%m') = '$currentMonth'";
 $stmt = $pdo->query($query);
 $monthlyRevenue = $stmt->fetchColumn() ?: 0;
@@ -66,28 +66,32 @@ $monthlyRevenue = $stmt->fetchColumn() ?: 0;
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Total de Clientes
                         </div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">
-                            <?= $totalClients ?></div>
+                            <?= $totalClients ?>
+                        </div>
                     </div>
 
                     <div class="card" style="border-left: 4px solid var(--success);">
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Assinaturas
                             Ativas</div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">
-                            <?= $activeSubs ?></div>
+                            <?= $activeSubs ?>
+                        </div>
                     </div>
 
                     <div class="card" style="border-left: 4px solid var(--warning);">
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Faturas Pendentes
                         </div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">
-                            <?= $pendingInvoices ?></div>
+                            <?= $pendingInvoices ?>
+                        </div>
                     </div>
 
                     <div class="card" style="border-left: 4px solid var(--info);">
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Receita Mensal
                         </div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">R$
-                            <?= number_format($monthlyRevenue, 2, ',', '.') ?></div>
+                            <?= number_format($monthlyRevenue, 2, ',', '.') ?>
+                        </div>
                     </div>
 
                 </div>
