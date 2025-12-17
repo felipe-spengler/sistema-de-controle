@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    dos2unix \
     && docker-php-ext-install pdo pdo_mysql zip
 
 # Enable mod_rewrite
@@ -25,11 +26,11 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80
-# Expose port 80
 EXPOSE 80
 
-# Make scripts executable
-RUN chmod +x scripts/start.sh scripts/scheduler.sh
+# Make scripts executable and fix line endings
+RUN dos2unix scripts/start.sh scripts/scheduler.sh \
+    && chmod +x scripts/start.sh scripts/scheduler.sh
 
 # Start application
 CMD ["/var/www/html/scripts/start.sh"]
