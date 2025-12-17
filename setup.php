@@ -63,6 +63,19 @@ try {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     )");
 
+    // Tabela Logs de Cobrança
+    $pdo->exec("CREATE TABLE IF NOT EXISTS logs_cobrancas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+        tipo VARCHAR(50), 
+        vendedor_nome VARCHAR(255),
+        cliente_rs VARCHAR(255),
+        telefone VARCHAR(50),
+        status VARCHAR(50),
+        mensagem TEXT,
+        erro TEXT
+    )");
+
     // Tabela Configurações
     $pdo->exec("CREATE TABLE IF NOT EXISTS configuracoes (
         id INT AUTO_INCREMENT PRIMARY KEY,

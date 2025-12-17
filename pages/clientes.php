@@ -15,10 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $tipo_software = $_POST['tipo_software'];
         $plano = $_POST['plano'];
         $mensalidade = $_POST['mensalidade'];
-        $percentual_vendedor = $_POST['percentual_vendedor'] ?? 50.00;
-
-        $stmt = $pdo->prepare("INSERT INTO clientes (vendedor_id, razao_social, cnpj, tipo_software, plano, mensalidade, percentual_vendedor, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'ativo')");
-        $stmt->execute([$userId, $razao_social, $cnpj, $tipo_software, $plano, $mensalidade, $percentual_vendedor]);
+        $stmt = $pdo->prepare("INSERT INTO clientes (vendedor_id, razao_social, cnpj, tipo_software, plano, mensalidade, status) VALUES (?, ?, ?, ?, ?, ?, 'ativo')");
+        $stmt->execute([$userId, $razao_social, $cnpj, $tipo_software, $plano, $mensalidade]);
 
         header("Location: clientes.php?success=created");
         exit;
@@ -33,10 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $plano = $_POST['plano'];
         $mensalidade = $_POST['mensalidade'];
         $status = $_POST['status'];
-        $percentual_vendedor = $_POST['percentual_vendedor'] ?? 50.00;
-
-        $stmt = $pdo->prepare("UPDATE clientes SET razao_social = ?, cnpj = ?, tipo_software = ?, plano = ?, mensalidade = ?, status = ?, percentual_vendedor = ? WHERE id = ?");
-        $stmt->execute([$razao_social, $cnpj, $tipo_software, $plano, $mensalidade, $status, $percentual_vendedor, $id]);
+        $stmt = $pdo->prepare("UPDATE clientes SET razao_social = ?, cnpj = ?, tipo_software = ?, plano = ?, mensalidade = ?, status = ? WHERE id = ?");
+        $stmt->execute([$razao_social, $cnpj, $tipo_software, $plano, $mensalidade, $status, $id]);
 
         header("Location: clientes.php?success=updated");
         exit;
@@ -63,7 +59,7 @@ if (isset($_GET['edit'])) {
 }
 
 // Fetch Clients
-$query = "SELECT c.*, u.nome as seller_name FROM clientes c JOIN usuarios u ON c.vendedor_id = u.id";
+$query = "SELECT c.*, u.nome as seller_name, u.taxa_comissao as percentual_vendedor FROM clientes c JOIN usuarios u ON c.vendedor_id = u.id";
 if (!$is_admin) {
     $query .= " WHERE c.vendedor_id = $userId";
 }
@@ -138,7 +134,8 @@ $clients = $stmt->fetchAll();
                                             <div style="font-weight: 500;"><?= htmlspecialchars($client['tipo_software']) ?>
                                             </div>
                                             <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                                <?= htmlspecialchars($client['plano']) ?></div>
+                                                <?= htmlspecialchars($client['plano']) ?>
+                                            </div>
                                         </td>
                                         <?php if ($is_admin): ?>
                                             <td><?= htmlspecialchars($client['seller_name']) ?></td><?php endif; ?>
@@ -228,15 +225,7 @@ $clients = $stmt->fetchAll();
                         <input type="number" step="0.01" name="mensalidade" class="form-control"
                             value="<?= $editClient ? $editClient['mensalidade'] : '' ?>" required>
                     </div>
-                    <?php if ($is_admin): ?>
-                        <div class="form-group">
-                            <label class="form-label">% Comissão Vendedor</label>
-                            <input type="number" step="0.01" min="0" max="100" name="percentual_vendedor"
-                                class="form-control"
-                                value="<?= $editClient ? $editClient['percentual_vendedor'] : '50.00' ?>" required>
-                            <small style="color: var(--text-muted);">Padrão: 50%</small>
-                        </div>
-                    <?php endif; ?>
+
                 </div>
                 <?php if ($editClient): ?>
                     <div class="form-group">

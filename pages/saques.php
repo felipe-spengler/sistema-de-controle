@@ -17,9 +17,10 @@ $user = $stmt->fetch();
 
 // Calcular total recebido (considerando o percentual do vendedor)
 $query = "SELECT 
-            SUM(f.valor * (c.percentual_vendedor / 100)) as total_comissao
+            SUM(f.valor * (u.taxa_comissao / 100)) as total_comissao
           FROM faturas f
           JOIN clientes c ON f.cliente_id = c.id
+          JOIN usuarios u ON c.vendedor_id = u.id
           WHERE f.status = 'pago' AND c.vendedor_id = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$userId]);
@@ -41,13 +42,14 @@ $availableBalance = $totalRecebidoComComissao - $totalWithdrawn - $totalPending;
 // Buscar detalhes das comissões (para exibir)
 $query = "SELECT 
             c.razao_social,
-            c.percentual_vendedor,
+            u.taxa_comissao as percentual_vendedor,
             SUM(f.valor) as total_faturado,
-            SUM(f.valor * (c.percentual_vendedor / 100)) as total_comissao
+            SUM(f.valor * (u.taxa_comissao / 100)) as total_comissao
           FROM faturas f
           JOIN clientes c ON f.cliente_id = c.id
+          JOIN usuarios u ON c.vendedor_id = u.id
           WHERE f.status = 'pago' AND c.vendedor_id = ?
-          GROUP BY c.id, c.razao_social, c.percentual_vendedor";
+          GROUP BY c.id, c.razao_social, u.taxa_comissao";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$userId]);
 $detalhesComissoes = $stmt->fetchAll();
@@ -193,7 +195,8 @@ if ($is_admin) {
                                             </td>
                                             <td>R$ <?= number_format($detalhe['total_faturado'], 2, ',', '.') ?></td>
                                             <td style="color: var(--success); font-weight: 600;">R$
-                                                <?= number_format($detalhe['total_comissao'], 2, ',', '.') ?></td>
+                                                <?= number_format($detalhe['total_comissao'], 2, ',', '.') ?>
+                                            </td>
                                             <td style="color: var(--text-muted);">R$
                                                 <?= number_format($detalhe['total_faturado'] - $detalhe['total_comissao'], 2, ',', '.') ?>
                                             </td>

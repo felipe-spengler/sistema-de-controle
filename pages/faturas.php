@@ -3,7 +3,7 @@ require_once '../includes/autenticacao.php';
 require_once '../config/db.php';
 require_once '../includes/asaas.php';
 
-$userId = $_SESSION['usuario_id'];
+$userId = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
 // Handle Invoice Actions
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $amount = $_POST['valor'];
         $due_date = $_POST['data_vencimento'];
 
-        $stmt = $pdo->prepare("INSERT INTO faturas (client_id, amount, due_date, status) VALUES (?, ?, ?, 'pendente')");
+        $stmt = $pdo->prepare("INSERT INTO faturas (cliente_id, valor, data_vencimento, status) VALUES (?, ?, ?, 'pendente')");
         $stmt->execute([$client_id, $amount, $due_date]);
 
         header("Location: faturas.php?success=created");
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'pay') {
         $invoice_id = $_POST['invoice_id'];
 
-        $stmt = $pdo->prepare("UPDATE faturas SET status = 'pago', payment_date = NOW() WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE faturas SET status = 'pago', data_pagamento = NOW() WHERE id = ?");
         $stmt->execute([$invoice_id]);
 
         header("Location: faturas.php?success=paid");
@@ -45,9 +45,9 @@ $stmt = $pdo->query($query);
 $invoices = $stmt->fetchAll();
 
 // Fetch Clients for Dropdown
-$clientQuery = "SELECT id, company_name FROM clientes";
+$clientQuery = "SELECT id, razao_social FROM clientes";
 if (!$is_admin) {
-    $clientQuery .= " WHERE seller_id = $userId";
+    $clientQuery .= " WHERE vendedor_id = $userId";
 }
 $stmt = $pdo->query($clientQuery);
 $clients = $stmt->fetchAll();
@@ -105,7 +105,8 @@ $clients = $stmt->fetchAll();
                                             <div style="font-weight: 500;"><?= htmlspecialchars($inv['razao_social']) ?>
                                             </div>
                                             <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                                <?= htmlspecialchars($inv['cnpj']) ?></div>
+                                                <?= htmlspecialchars($inv['cnpj']) ?>
+                                            </div>
                                         </td>
                                         <td><?= date('d/m/Y', strtotime($inv['data_vencimento'])) ?></td>
                                         <td>R$ <?= number_format($inv['valor'], 2, ',', '.') ?></td>

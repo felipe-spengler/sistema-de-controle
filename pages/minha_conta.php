@@ -2,7 +2,7 @@
 require_once '../includes/autenticacao.php';
 require_once '../config/db.php';
 
-$userId = $_SESSION['usuario_id'];
+$userId = $_SESSION['user_id'];
 
 // Atualizar dados
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $phone = $_POST['telefone'];
         $cpf_cnpj = $_POST['cpf_cnpj'];
 
-        $stmt = $pdo->prepare("UPDATE usuarios SET name = ?, email = ?, phone = ?, cpf_cnpj = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE usuarios SET nome = ?, email = ?, telefone = ?, cpf_cnpj = ? WHERE id = ?");
         $stmt->execute([$name, $email, $phone, $cpf_cnpj, $userId]);
 
         $_SESSION['user_nome'] = $name;
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $bank_account = $_POST['banco_conta'];
         $bank_account_type = $_POST['banco_tipo_conta'];
 
-        $stmt = $pdo->prepare("UPDATE usuarios SET bank_name = ?, bank_agency = ?, bank_account = ?, bank_account_type = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE usuarios SET banco_nome = ?, banco_agencia = ?, banco_conta = ?, banco_tipo_conta = ? WHERE id = ?");
         $stmt->execute([$bank_name, $bank_agency, $bank_account, $bank_account_type, $userId]);
 
         $success = "Dados bancários atualizados com sucesso!";
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
 
-        $stmt = $pdo->prepare("SELECT password FROM usuarios WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT senha FROM usuarios WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $error = "A senha deve ter no mínimo 6 caracteres.";
         } else {
             $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE usuarios SET password = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE usuarios SET senha = ? WHERE id = ?");
             $stmt->execute([$hashed, $userId]);
             $success = "Senha alterada com sucesso!";
         }
@@ -120,7 +120,8 @@ $user = $stmt->fetch();
                             <div class="form-group">
                                 <label class="form-label">Telefone</label>
                                 <input type="text" name="phone" class="form-control"
-                                    value="<?= htmlspecialchars($user['telefone'] ?? '') ?>" placeholder="(00) 00000-0000">
+                                    value="<?= htmlspecialchars($user['telefone'] ?? '') ?>"
+                                    placeholder="(00) 00000-0000">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">CPF/CNPJ</label>
@@ -150,7 +151,8 @@ $user = $stmt->fetch();
                                 <div class="form-group">
                                     <label class="form-label">Agência</label>
                                     <input type="text" name="bank_agency" class="form-control"
-                                        value="<?= htmlspecialchars($user['banco_agencia'] ?? '') ?>" placeholder="0000">
+                                        value="<?= htmlspecialchars($user['banco_agencia'] ?? '') ?>"
+                                        placeholder="0000">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Conta</label>

@@ -2,7 +2,7 @@
 require_once '../includes/autenticacao.php';
 require_once '../config/db.php';
 
-$userId = $_SESSION['usuario_id'];
+$userId = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
 // Filtros

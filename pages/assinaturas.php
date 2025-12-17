@@ -2,14 +2,14 @@
 require_once '../includes/autenticacao.php';
 require_once '../config/db.php';
 
-$userId = $_SESSION['usuario_id'];
+$userId = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
 // Buscar assinaturas (clientes ativos)
 $query = "SELECT c.*, u.nome as seller_name,
-          (SELECT COUNT(*) FROM faturas WHERE client_id = c.id AND status = 'pago') as paid_invoices,
-          (SELECT COUNT(*) FROM faturas WHERE client_id = c.id AND status = 'pendente') as pending_invoices,
-          (SELECT MAX(due_date) FROM faturas WHERE client_id = c.id) as next_renewal
+          (SELECT COUNT(*) FROM faturas WHERE cliente_id = c.id AND status = 'pago') as paid_invoices,
+          (SELECT COUNT(*) FROM faturas WHERE cliente_id = c.id AND status = 'pendente') as pending_invoices,
+          (SELECT MAX(data_vencimento) FROM faturas WHERE cliente_id = c.id) as next_renewal
           FROM clientes c 
           JOIN usuarios u ON c.vendedor_id = u.id
           WHERE c.status = 'ativo'";
@@ -25,9 +25,9 @@ $subscriptions = $stmt->fetchAll();
 
 // Estatísticas
 $totalActive = count($subscriptions);
-$totalMonthlyRevenue = array_sum(array_column($subscriptions, 'monthly_fee'));
+$totalMonthlyRevenue = array_sum(array_column($subscriptions, 'mensalidade'));
 
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM clientes WHERE status = 'inativo' AND seller_id = ?");
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM clientes WHERE status = 'inativo' AND vendedor_id = ?");
 $stmt->execute([$userId]);
 $totalInactive = $stmt->fetchColumn();
 ?>
@@ -61,21 +61,24 @@ $totalInactive = $stmt->fetchColumn();
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Assinaturas
                             Ativas</div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">
-                            <?= $totalActive ?></div>
+                            <?= $totalActive ?>
+                        </div>
                     </div>
 
                     <div class="card" style="border-left: 4px solid var(--danger);">
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Assinaturas
                             Inativas</div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">
-                            <?= $totalInactive ?></div>
+                            <?= $totalInactive ?>
+                        </div>
                     </div>
 
                     <div class="card" style="border-left: 4px solid var(--primary-color);">
                         <div class="card-title" style="color: var(--text-muted); font-size: 0.875rem;">Receita Mensal
                             Recorrente</div>
                         <div style="font-size: 2rem; font-weight: 700; margin-top: var(--spacing-sm);">R$
-                            <?= number_format($totalMonthlyRevenue, 2, ',', '.') ?></div>
+                            <?= number_format($totalMonthlyRevenue, 2, ',', '.') ?>
+                        </div>
                     </div>
 
                 </div>
@@ -107,13 +110,15 @@ $totalInactive = $stmt->fetchColumn();
                                             <div style="font-weight: 500;"><?= htmlspecialchars($sub['razao_social']) ?>
                                             </div>
                                             <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                                <?= htmlspecialchars($sub['cnpj']) ?></div>
+                                                <?= htmlspecialchars($sub['cnpj']) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <div style="font-weight: 500;"><?= htmlspecialchars($sub['tipo_software']) ?>
                                             </div>
                                             <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                                <?= htmlspecialchars($sub['plano']) ?></div>
+                                                <?= htmlspecialchars($sub['plano']) ?>
+                                            </div>
                                         </td>
                                         <?php if ($is_admin): ?>
                                             <td><?= htmlspecialchars($sub['seller_name']) ?></td>

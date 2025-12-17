@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $email = $_POST['email'];
     $password = password_hash($_POST['senha'], PASSWORD_DEFAULT);
 
-    $stmt = $pdo->prepare("INSERT INTO usuarios (name, email, password, role) VALUES (?, ?, ?, 'vendedor')");
+    $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, 'vendedor')");
     try {
         $stmt->execute([$name, $email, $password]);
     } catch (PDOException $e) {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-$stmt = $pdo->query("SELECT * FROM usuarios WHERE role = 'vendedor' ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT * FROM usuarios WHERE tipo = 'vendedor' ORDER BY criado_em DESC");
 $sellers = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
