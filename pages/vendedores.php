@@ -70,9 +70,9 @@ $sellers = $stmt->fetchAll();
                                         <td><?= htmlspecialchars($seller['email']) ?></td>
                                         <td><?= date('d/m/Y', strtotime($seller['criado_em'])) ?></td>
                                         <td>
-                                            <button class="btn" onclick="alert('Funcionalidade em desenvolvimento!')"
-                                                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #f1f5f9; color: var(--text-main);">Acessar
-                                                Painel</button>
+                                            <a href="painel.php?view_seller_id=<?= $seller['id'] ?>" class="btn"
+                                                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #f1f5f9; color: var(--text-main); text-decoration: none; display: inline-block;">Acessar
+                                                Painel</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

@@ -5,10 +5,30 @@ require_once '../config/db.php';
 // Fetch stats
 $userId = $_SESSION['user_id'];
 $is_admin = isAdmin();
+$viewingSeller = false;
+$sellerName = '';
+
+// Check if admin is viewing a specific seller
+if ($is_admin && isset($_GET['view_seller_id'])) {
+    $targetId = $_GET['view_seller_id'];
+
+    // Verify seller exists
+    $stmt = $pdo->prepare("SELECT nome FROM usuarios WHERE id = ? AND tipo = 'vendedor'");
+    $stmt->execute([$targetId]);
+    $seller = $stmt->fetch();
+
+    if ($seller) {
+        $viewingSeller = true;
+        $userId = $targetId; // Impersonate for stats
+        $sellerName = $seller['nome'];
+    }
+}
 
 // Base query conditions
-$sellerCondition = $is_admin ? "1=1" : "vendedor_id = $userId";
-$clientJoin = $is_admin ? "" : "JOIN clientes c ON i.cliente_id = c.id AND c.vendedor_id = $userId";
+// If viewing a seller, treating it like a normal seller view (not admin view)
+$useFilters = !$is_admin || $viewingSeller;
+
+$sellerCondition = ($useFilters) ? "vendedor_id = $userId" : "1=1";
 
 // 1. Total Clients
 $stmt = $pdo->query("SELECT COUNT(*) FROM clientes WHERE $sellerCondition");
@@ -19,7 +39,7 @@ $stmt = $pdo->query("SELECT COUNT(*) FROM clientes WHERE status = 'ativo' AND $s
 $activeSubs = $stmt->fetchColumn();
 
 // 3. Pending Invoices Count
-$query = $is_admin
+$query = (!$useFilters)
     ? "SELECT COUNT(*) FROM faturas WHERE status = 'pendente'"
     : "SELECT COUNT(*) FROM faturas i JOIN clientes c ON i.cliente_id = c.id WHERE c.vendedor_id = $userId AND i.status = 'pendente'";
 $stmt = $pdo->query($query);
@@ -27,7 +47,7 @@ $pendingInvoices = $stmt->fetchColumn();
 
 // 4. Monthly Revenue (Paid invoices this month)
 $currentMonth = date('Y-m');
-$query = $is_admin
+$query = (!$useFilters)
     ? "SELECT SUM(valor) FROM faturas WHERE status = 'pago' AND DATE_FORMAT(data_pagamento, '%Y-%m') = '$currentMonth'"
     : "SELECT SUM(i.valor) FROM faturas i JOIN clientes c ON i.cliente_id = c.id WHERE c.vendedor_id = $userId AND i.status = 'pago' AND DATE_FORMAT(i.data_pagamento, '%Y-%m') = '$currentMonth'";
 $stmt = $pdo->query($query);
@@ -58,6 +78,17 @@ $monthlyRevenue = $stmt->fetchColumn() ?: 0;
             </header>
 
             <div class="page-content">
+                <?php if ($viewingSeller): ?>
+                    <div
+                        style="background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Você está visualizando o painel do vendedor:
+                            <strong><?= htmlspecialchars($sellerName) ?></strong></span>
+                        <a href="painel.php" class="btn"
+                            style="padding: 0.25rem 0.75rem; font-size: 0.875rem; background: #fff; color: #1e40af; border: 1px solid #bfdbfe;">Voltar
+                            para Visão Geral</a>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Stats Grid -->
                 <div
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-xl);">
